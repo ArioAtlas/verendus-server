@@ -1,0 +1,262 @@
+openapi: 3.0.1
+info:
+  title: Verendus Vehicle Inspection Service
+  description: A REST API for vehicle inspections
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Vehicle
+    description: vehicle inspection service endpoint
+  - name: Report
+    description: report service endpoint
+  - name: Auth
+    description: Authentication service endpoint
+paths:
+  /vehicle:
+    get:
+      tags:
+        - Vehicle
+      description: Fetch all vehicle inpections
+      responses:
+        200:
+          description: Return the list of the all vehicle inpections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+        4XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Vehicle
+      description: Upload a vehicle inspection file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                reportFile:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Return the result of the file processing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportUploadRes"
+        4XX:
+          description: Process not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Error in the vehicles list parsing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /vehicle/identity/{identity}:
+    get:
+      tags:
+        - Vehicle
+      parameters:
+        - name: identity
+          in: path
+          description: The identity number of the vehicle to retrieve
+          required: true
+          schema:
+            type: string
+      description: retrieve a vehicle information by its identity number
+      responses:
+        200:
+          description: Return the vehicle information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        4XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /vehicle/chassis/{chassisNumber}:
+    get:
+      tags:
+        - Vehicle
+      parameters:
+        - name: chassisNumber
+          in: path
+          description: The chassis number number of the vehicle to retrieve
+          required: true
+          schema:
+            type: string
+      description: retrieve a vehicle information by its chassis number
+      responses:
+        200:
+          description: Return the vehicle information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        4XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /report:
+    get:
+      tags:
+        - Report
+      description: Retrieve a list of chassis number and inspection dates for all vehicle inpections
+      responses:
+        200:
+          description: Return a list of vehicle consist of a chassis number and inspection dates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InspectionByChassisNumberBundle"
+        4XX:
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Vehicle:
+      type: object
+      properties:
+        identity:
+          type: string
+          example: TN14780
+        chassisNumber:
+          type: string
+          example: JTEGG32M500015704
+        modelYear:
+          type: number
+          example: 2004
+        typeApprovalNo:
+          type: number
+          example: 52750082004
+        privatelyImported:
+          type: boolean
+          example: true
+        color:
+          type: string
+          example: SVART
+        registration:
+          type: object
+          properties:
+            firstRegistration:
+              type: number
+              example: 20090127
+            latestRegistration:
+              type: number
+              example: 20130628
+            monthlyRegistration:
+              type: number
+              example: 1206
+            dateOfDeregistration:
+              type: number
+              example: 0
+        inspection:
+          type: object
+          properties:
+            latestInspectionDate:
+              type: number
+              example: 20170103
+            nextInspectionDate:
+              type: number
+              example: 20181031
+    ReportUploadRes:
+      type: object
+      properties:
+        newVehicle:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vehicle"
+          example: 3
+        updatedVehicle:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpdatePair"
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParseError"
+        processTime:
+          type: number
+          example: 0.03
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: ""
+    UpdatePair:
+      type: object
+      properties:
+        old:
+          $ref: "#/components/schemas/Vehicle"
+        new:
+          $ref: "#/components/schemas/Vehicle"
+    ParseError:
+      type: object
+      properties:
+        line:
+          type: number
+          example: 3
+        text:
+          type: string
+    InspectionByChassisNumberBundle:
+      title: InspectionByChassisNumberBundle
+      type: object
+      properties:
+        chassisNumber:
+          type: string
+          example: JTEGG32M500015704
+        inspection:
+          type: object
+          properties:
+            latestInspectionDate:
+              type: number
+              example: 20170103
+            nextInspectionDate:
+              type: number
+              example: 20181031
