@@ -1,6 +1,25 @@
 import mongoose from "mongoose";
 import { toJSON, paginate } from "./plugins";
 
+const _decorator = (schema) => {
+  let transform;
+  if (schema.options.toJSON && schema.options.toJSON.transform) {
+    transform = schema.options.toJSON.transform;
+  }
+
+  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
+    transform(doc, ret, options) {
+      ret.inspection = ret._inspection;
+      ret.registration = ret._registration;
+      delete ret._inspection;
+      delete ret._registration;
+      if (transform) {
+        return transform(doc, ret, options);
+      }
+    },
+  });
+};
+
 const VehicleSchema = mongoose.Schema(
   {
     identity: {
@@ -47,5 +66,6 @@ const VehicleSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 VehicleSchema.plugin(toJSON);
 VehicleSchema.plugin(paginate);
+VehicleSchema.plugin(_decorator);
 
 export default mongoose.model("Vehicle", VehicleSchema);

@@ -3,12 +3,11 @@ import config from "./config/config";
 import app from "./app";
 import logger from "./config/logger";
 
-let server;
+const server = app.listen(config.port, () => {
+  logger.info(`Listening to port ${config.port}`);
 
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-  logger.info("Connected to MongoDB");
-  server = app.listen(config.port, () => {
-    logger.info(`Listening to port ${config.port}`);
+  mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+    logger.info("Connected to MongoDB");
   });
 });
 
@@ -16,9 +15,11 @@ const exitHandler = () => {
   if (server) {
     server.close(() => {
       logger.info("Server closed");
+      // eslint-disable-next-line no-process-exit
       process.exit(1);
     });
   } else {
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
   }
 };
@@ -44,3 +45,5 @@ process.on("SIGHUP", () => {
     server.close();
   }
 });
+
+export default server;
