@@ -11,7 +11,7 @@ describe("Vehicle", () => {
       .expect("Content-Type", /json/)
       .then((r) => {
         expect(r.status).to.be.eq(200);
-        expect(r.body).to.be.an.an("array").of.length(15);
+        expect(r.body).to.be.an.an("array").of.length(20);
       }));
 
   it("should get an vehicle by identity", () =>
