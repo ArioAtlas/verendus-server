@@ -15,7 +15,6 @@ class VehicleController {
         let result = await VehicleService.parseFile(req.files.reportFile);
 
         // append extra properties
-        result.newVehicle = result.newVehicle.length;
         result.processTime = new Date().getMilliseconds() - startTime;
 
         //send response

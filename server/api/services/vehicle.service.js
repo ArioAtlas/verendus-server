@@ -49,8 +49,9 @@ class VehicleService {
   }
 
   async parseFile(file) {
-    let newVehicles = [];
-    let updatedVehicles = [];
+    let totalAdded = 0;
+    let totalUpdated = 0;
+    let vehicles = [];
     let errors = [];
     let i = 0;
 
@@ -58,6 +59,9 @@ class VehicleService {
     buffer = buffer.split("\n");
 
     for (let element of buffer) {
+      element = element.trim();
+      if (!element.length) continue;
+
       try {
         parser.validate(element);
         let v = parser.parse(element).toVehicle();
@@ -66,15 +70,29 @@ class VehicleService {
         let vehicle = await this.findByIdentityNo(v.identity);
         if (!vehicle) {
           // new vehicle
-          this.create(v);
-          newVehicles.push(v);
+          vehicle = this.create(v);
+          vehicle.save();
+          vehicles.push({ data: vehicle, isNew: true, diff: [] });
+          totalAdded++;
         } else {
+          const diff = parser.findDiff(
+            vehicle.toJSON(),
+            this.create(v).toJSON()
+          );
+
           // update vehicle
           Object.keys(v).forEach((key) => {
             vehicle[key] = v[key];
           });
           this.save(vehicle);
-          updatedVehicles.push({ old: vehicle, new: v });
+
+          vehicles.push({
+            data: vehicle,
+            isNew: false,
+            diff,
+          });
+
+          totalUpdated++;
         }
       } catch (error) {
         console.log(error);
@@ -84,8 +102,9 @@ class VehicleService {
     }
 
     return {
-      newVehicle: newVehicles,
-      updatedVehicle: updatedVehicles,
+      vehicles,
+      totalAdded,
+      totalUpdated,
       errors: errors,
     };
   }

@@ -17,5 +17,6 @@ router.get(
 
 // Report routes
 router.get("/report", ReportController.getInspectionWithChassisReport);
+router.get("/report/new/in-days/:days", ReportController.getNewVehicleCount);
 
 export default router;

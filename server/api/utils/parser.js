@@ -39,6 +39,39 @@ const stringify = (record) => {
   return str;
 };
 
+const findDiff = (oldItem, newItem) => {
+  let keys = new Set([...Object.keys(oldItem), ...Object.keys(newItem)]);
+  let diff = [];
+
+  for (let element of keys) {
+    if (element === "id") continue;
+    if (typeof oldItem[element] !== typeof newItem[element]) {
+      diff.push({
+        name: element.replace("_", ""),
+        oldValue: oldItem[element],
+        sub: [],
+      });
+    } else if (typeof oldItem[element] === "object") {
+      const df = findDiff(oldItem[element], newItem[element]);
+      if (df.length) {
+        diff.push({
+          name: element.replace("_", ""),
+          oldValue: oldItem[element],
+          sub: findDiff(oldItem[element], newItem[element]),
+        });
+      }
+    } else if (oldItem[element] != newItem[element]) {
+      diff.push({
+        name: element.replace("_", ""),
+        oldValue: oldItem[element],
+        sub: [],
+      });
+    }
+  }
+
+  return diff;
+};
+
 export default () => {
   // Sort cut guide based on start index
   guide.sort((a, b) => a.range.start - b.range.start);
@@ -70,5 +103,6 @@ export default () => {
     parse,
     stringify,
     createRecord,
+    findDiff,
   };
 };

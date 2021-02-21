@@ -18,6 +18,7 @@ paths:
       tags:
         - Vehicle
       description: Fetch all vehicle inpections
+      summary: Get all vehicle
       responses:
         200:
           description: Return the list of the all vehicle inpections
@@ -43,6 +44,7 @@ paths:
       tags:
         - Vehicle
       description: Upload a vehicle inspection file
+      summary: Upload a vehicle file
       requestBody:
         content:
           multipart/form-data:
@@ -75,6 +77,7 @@ paths:
     get:
       tags:
         - Vehicle
+      summary: Find by Identity Number
       parameters:
         - name: identity
           in: path
@@ -106,6 +109,7 @@ paths:
     get:
       tags:
         - Vehicle
+      summary: Find by Chassis Number
       parameters:
         - name: chassisNumber
           in: path
@@ -133,10 +137,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /report/new/in-days/{days}:
+    get:
+      tags:
+        - Report
+      parameters:
+        - name: days
+          in: path
+          description: The days ago from which you need the report
+          required: true
+          schema:
+            type: string
+      summary: New added vehicle from days ago
+      description: Retrieve a list of chassis number and inspection dates for all vehicle inpections
+      responses:
+        200:
+          description: Return a list of vehicle consist of a chassis number and inspection dates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewVehicleByDay"
+        4XX:
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /report:
     get:
       tags:
         - Report
+      summary: A report consisting of Chassis Number and Inspection Dates
       description: Retrieve a list of chassis number and inspection dates for all vehicle inpections
       responses:
         200:
@@ -207,15 +244,16 @@ components:
     ReportUploadRes:
       type: object
       properties:
-        newVehicle:
+        vehicles:
           type: array
           items:
-            $ref: "#/components/schemas/Vehicle"
-          example: 3
-        updatedVehicle:
-          type: array
-          items:
-            $ref: "#/components/schemas/UpdatePair"
+            $ref: "#/components/schemas/UpdateLog"
+        totalAdded:
+          type: number
+          example: 0
+        totalUpdated:
+          type: number
+          example: 0
         errors:
           type: array
           items:
@@ -229,13 +267,30 @@ components:
         error:
           type: string
           example: ""
-    UpdatePair:
+    UpdateLog:
       type: object
       properties:
-        old:
+        data:
           $ref: "#/components/schemas/Vehicle"
-        new:
-          $ref: "#/components/schemas/Vehicle"
+        isNew:
+          type: number
+        diff:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffResult"
+    DiffResult:
+      type: object
+      properties:
+        name:
+          type: string
+          example: ""
+        oldValue:
+          type: string
+          example: ""
+        sub:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffResult"
     ParseError:
       type: object
       properties:
@@ -260,3 +315,20 @@ components:
             nextInspectionDate:
               type: number
               example: 20181031
+    NewVehicleByDay:
+      type: array
+      items:
+        type: object
+        properties:
+          _id:
+            type: object
+            properties:
+              day:
+                type: string
+                example: 12
+              month:
+                type: string
+                example: 2
+          count:
+            type: number
+            example: 25
