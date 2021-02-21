@@ -1,12 +1,9 @@
-import { VehicleService } from "./";
 import { VehicleModel } from "../models";
-import flatten from "flat";
-
 class ReportService {
   async inspectioAndChassis() {
-    let vehicles = await VehicleModel.find({}).select(
-      "chassisNumber _inspection -_id"
-    );
+    let vehicles = await VehicleModel.find({})
+      .sort({ "_inspection.nextInspectionDate": -1 })
+      .select("chassisNumber _inspection -_id");
     return vehicles;
   }
 
