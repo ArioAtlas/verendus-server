@@ -15,7 +15,7 @@ import ApiError from "./api/utils/ApiError";
 
 const app = new Express();
 
-if (config.env !== "production") {
+if (config.env !== "test") {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
@@ -48,8 +48,6 @@ app.use(
     debug: config.env !== "production",
   })
 );
-
-
 
 // Open API Specification
 const apiSpec = path.join(__dirname, "./api/docs/api.yml");
