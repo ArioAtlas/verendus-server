@@ -15,11 +15,12 @@ import ApiError from "./api/utils/ApiError";
 
 const app = new Express();
 
-if (config.env !== "test") {
+if (config.env !== "production") {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
-
+console.log();
+console.log(config.env);
 // set security HTTP headers
 app.use(helmet());
 
@@ -44,12 +45,11 @@ app.options("*", cors());
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
-    debug: true,
+    debug: config.env !== "production",
   })
 );
 
-const root = path.normalize(`${__dirname}/..`);
-app.use(Express.static(`${root}/public`));
+
 
 // Open API Specification
 const apiSpec = path.join(__dirname, "./api/docs/api.yml");
@@ -58,6 +58,10 @@ app.use(process.env.OPENAPI_SPEC || "/spec", Express.static(apiSpec));
 
 // api routes
 app.use("/api", routes);
+
+const root = path.normalize(`${__dirname}/..`);
+app.use(Express.static(`${root}/public`));
+app.use('/dashboard',Express.static(`${root}/public`));
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
